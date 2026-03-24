@@ -1,0 +1,6 @@
+node_modules
+.env
+package-lock.json
+scrap_log.txt
+*.log
+dist/
