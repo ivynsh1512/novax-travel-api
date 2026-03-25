@@ -8,32 +8,61 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const { scrapeCity } = require('./utils/dynamicScraper');
+
 // 🏨 Premium Hotel Discovery API
 app.get('/hotels', async (req, res) => {
-  const { city, query } = req.query;
+  // Support both 'place' and 'city' query parameters for backward compatibility
+  const place = req.query.place || req.query.city;
+  const budgetStr = req.query.budget;
+  const query = req.query.query; 
 
-  if (!city) {
-    return res.status(400).json({ error: "City parameter is required" });
+  if (!place) {
+    return res.status(400).json({ error: "Place parameter is required" });
   }
 
+  let budget = null;
   try {
-    // 1. Fetch matching city results
-    const hotels = await Hotel.find({ city: new RegExp(city, 'i') });
+    if (budgetStr && budgetStr !== "null") budget = JSON.parse(budgetStr);
+  } catch(e) {}
 
-    if (!hotels.length) {
-      console.log(`🔎 No hotels found in ${city}`);
-      return res.json([]);
+  try {
+    const cleanPlace = place.trim().toLowerCase();
+    const escapedPlace = cleanPlace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const placeRegex = new RegExp(`^${escapedPlace}$`, 'i');
+    
+    // ✅ 1. CHECK DB FIRST
+    let hotels = await Hotel.find({ city: placeRegex }).lean();
+
+    if (hotels.length > 0) {
+      // ✅ Apply budget filter on DB data
+      if (budget) {
+        hotels = hotels.filter(h => h.price <= budget.max + 500);
+      }
+      return res.json(hotels.length ? rankHotels(hotels, query || "") : []);
     }
 
-    // 2. Rank based on user intent (budget/luxury)
-    const rankedHotels = rankHotels(hotels, query || "");
+    // 🔥 2. SCRAPE IF EMPTY
+    console.log(`🔍 Live Scraping starting for ${place} with budget`, budget);
 
-    // 3. Return top 10 specialized recommendations
-    res.json(rankedHotels.slice(0, 10));
-    
+    const scraped = await scrapeCity(place, budget);
+
+    // ✅ SAVE
+    if (scraped.length > 0) {
+      await Hotel.insertMany(
+        scraped.map(h => ({
+          ...h,
+          city: cleanPlace.charAt(0).toUpperCase() + cleanPlace.slice(1),
+          address: h.address || `${cleanPlace}, India`
+        }))
+      );
+    }
+
+    return res.json(scraped.length ? rankHotels(scraped, query || "") : []);
+
   } catch (err) {
     console.error("⛔ Travel API error:", err);
-    res.status(500).json({ error: "Discovery service temporarily unavailable" });
+    res.status(500).json({ error: "Discovery service failed or timed out" });
   }
 });
 

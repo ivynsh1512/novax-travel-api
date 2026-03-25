@@ -16,6 +16,11 @@ const hotelSchema = new mongoose.Schema({
   link: String,
   image: String,
   tags: [String],
+  address: String,
+  highlights: [String],
+  amenities: [String],
+  type: String, // budget / mid / luxury
+  vibe: [String], // adventure, chill, luxury
   sponsored: { type: Boolean, default: false }
 });
 

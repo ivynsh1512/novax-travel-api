@@ -23,7 +23,8 @@ function rankHotels(hotels, query = "") {
         score += 20;
       }
 
-      return { ...h, score };
+      const cleanHotel = h.toObject ? h.toObject() : h;
+      return { ...cleanHotel, score };
     })
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
