@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const Hotel = require('./db');
@@ -34,6 +35,36 @@ app.get('/hotels', async (req, res) => {
     console.error("⛔ Travel API error:", err);
     res.status(500).json({ error: "Discovery service temporarily unavailable" });
   }
+});
+
+// 🚣 Activities API (Rishikesh USP)
+app.get('/activities', (req, res) => {
+  const city = req.query.city;
+  if (!city) return res.json([]);
+
+  if (city.toLowerCase().includes("rishikesh")) {
+    return res.json([
+      {
+        name: "River Rafting",
+        price: 1200,
+        image: "https://images.unsplash.com/photo-1599839619557-40da8218197c?auto=format&fit=crop&q=80&w=600",
+        type: "Adventure"
+      },
+      {
+        name: "Bungee Jumping",
+        price: 3500,
+        image: "https://images.unsplash.com/photo-1550993012-706596e21074?auto=format&fit=crop&q=80&w=600",
+        type: "Extreme"
+      },
+      {
+        name: "Camping by Ganga",
+        price: 1500,
+        image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&q=80&w=600",
+        type: "Relaxation"
+      }
+    ]);
+  }
+  res.json([]);
 });
 
 // ✅ Dynamic Port for Render Deployment
