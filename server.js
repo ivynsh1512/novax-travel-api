@@ -47,13 +47,13 @@ app.get('/activities', (req, res) => {
       {
         name: "River Rafting",
         price: 1200,
-        image: "https://images.unsplash.com/photo-1599839619557-40da8218197c?auto=format&fit=crop&q=80&w=600",
+        image: "https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&q=80&w=600",
         type: "Adventure"
       },
       {
         name: "Bungee Jumping",
         price: 3500,
-        image: "https://images.unsplash.com/photo-1550993012-706596e21074?auto=format&fit=crop&q=80&w=600",
+        image: "https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&q=80&w=600",
         type: "Extreme"
       },
       {
